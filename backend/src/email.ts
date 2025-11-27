@@ -25,7 +25,7 @@ export async function sendListLinksEmail(
   lists: ListLink[]
 ): Promise<boolean> {
   if (!process.env.RESEND_API_KEY) {
-    console.warn('RESEND_API_KEY not set, skipping email send');
+    console.error('RESEND_API_KEY not set in environment variables');
     return false;
   }
 
@@ -46,7 +46,7 @@ export async function sendListLinksEmail(
       </div>
     `).join('');
 
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: 'BlindList <onboarding@resend.dev>', // Change this to your verified domain
       to,
       subject: `Your BlindList ${lists.length > 1 ? 'Lists' : 'List'}`,
@@ -81,9 +81,15 @@ export async function sendListLinksEmail(
       `,
     });
 
+    console.log('List links email sent successfully to:', to, 'Result:', result);
     return true;
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error('Error sending list links email to:', to);
+    console.error('Error details:', error);
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
     return false;
   }
 }
@@ -94,7 +100,7 @@ export async function sendVerificationEmail(
   emailToken: string
 ): Promise<boolean> {
   if (!process.env.RESEND_API_KEY) {
-    console.warn('RESEND_API_KEY not set, skipping email send');
+    console.error('RESEND_API_KEY not set in environment variables');
     return false;
   }
 
@@ -102,7 +108,7 @@ export async function sendVerificationEmail(
   const verificationUrl = `${baseUrl}/verify-email/${emailToken}`;
 
   try {
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: 'BlindList <onboarding@resend.dev>', // Change this to your verified domain
       to,
       subject: 'Access Your BlindLists',
@@ -146,9 +152,15 @@ export async function sendVerificationEmail(
       `,
     });
 
+    console.log('Verification email sent successfully to:', to, 'Result:', result);
     return true;
   } catch (error) {
-    console.error('Error sending verification email:', error);
+    console.error('Error sending verification email to:', to);
+    console.error('Error details:', error);
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
     return false;
   }
 }

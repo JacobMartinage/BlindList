@@ -375,7 +375,12 @@ app.post('/api/lists/lookup', async (req, res) => {
     });
 
     // Send verification email
-    await sendVerificationEmail(email, emailToken);
+    const emailSent = await sendVerificationEmail(email, emailToken);
+
+    if (!emailSent) {
+      console.error('Failed to send verification email to:', email);
+      return res.status(500).json({ error: 'Failed to send verification email' });
+    }
 
     res.json({ success: true, message: 'If lists exist for this email, a link has been sent.' });
   } catch (error) {
