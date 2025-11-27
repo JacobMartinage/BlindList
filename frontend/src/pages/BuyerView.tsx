@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { BuyerList, BuyerItem } from '../types'
+import { getApiUrl } from '../config'
 
 function BuyerView() {
   const { token } = useParams<{ token: string }>()
@@ -15,7 +16,7 @@ function BuyerView() {
 
   const fetchList = async () => {
     try {
-      const response = await fetch(`/api/lists/buyer/${token}`)
+      const response = await fetch(getApiUrl(`/api/lists/buyer/${token}`))
 
       if (!response.ok) {
         throw new Error('List not found')
@@ -35,7 +36,7 @@ function BuyerView() {
     setToggling(itemId)
 
     try {
-      const response = await fetch(`/api/lists/buyer/${token}/items/${itemId}/toggle-purchased`, {
+      const response = await fetch(getApiUrl(`/api/lists/buyer/${token}/items/${itemId}/toggle-purchased`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

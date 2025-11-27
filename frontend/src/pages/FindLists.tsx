@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { getApiUrl } from '../config'
 
 function FindLists() {
   const [email, setEmail] = useState('')
@@ -19,7 +20,7 @@ function FindLists() {
     setError('')
 
     try {
-      const response = await fetch('/api/lists/lookup', {
+      const response = await fetch(getApiUrl('/api/lists/lookup'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { listStorage } from '../utils/listStorage'
+import { getApiUrl } from '../config'
 
 interface VerifiedList {
   name: string;
@@ -24,7 +25,7 @@ function VerifyEmail() {
 
   const verifyToken = async () => {
     try {
-      const response = await fetch(`/api/lists/verify-email/${token}`)
+      const response = await fetch(getApiUrl(`/api/lists/verify-email/${token}`))
 
       if (!response.ok) {
         throw new Error('Invalid or expired verification link')

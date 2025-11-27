@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { listStorage } from '../utils/listStorage'
+import { getApiUrl } from '../config'
 
 function LandingPage() {
   const [listName, setListName] = useState('')
@@ -23,7 +24,7 @@ function LandingPage() {
     setError('')
 
     try {
-      const response = await fetch('/api/lists', {
+      const response = await fetch(getApiUrl('/api/lists'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -71,7 +72,7 @@ function LandingPage() {
 
     try {
       const creatorToken = result?.creatorUrl.split('/').pop() || ''
-      const response = await fetch(`/api/lists/${creatorToken}/associate-email`, {
+      const response = await fetch(getApiUrl(`/api/lists/${creatorToken}/associate-email`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { CreatorList, CreatorItem } from '../types'
+import { getApiUrl } from '../config'
 
 function CreatorView() {
   const { token } = useParams<{ token: string }>()
@@ -26,7 +27,7 @@ function CreatorView() {
 
   const fetchList = async () => {
     try {
-      const response = await fetch(`/api/lists/creator/${token}`)
+      const response = await fetch(getApiUrl(`/api/lists/creator/${token}`))
 
       if (!response.ok) {
         throw new Error('List not found')
@@ -52,7 +53,7 @@ function CreatorView() {
     setSubmitting(true)
 
     try {
-      const response = await fetch(`/api/lists/creator/${token}/items`, {
+      const response = await fetch(getApiUrl(`/api/lists/creator/${token}/items`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -80,7 +81,7 @@ function CreatorView() {
     setSubmitting(true)
 
     try {
-      const response = await fetch(`/api/lists/creator/${token}/items/${item.id}`, {
+      const response = await fetch(getApiUrl(`/api/lists/creator/${token}/items/${item.id}`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -118,7 +119,7 @@ function CreatorView() {
     }
 
     try {
-      const response = await fetch(`/api/lists/creator/${token}/items/${itemId}`, {
+      const response = await fetch(getApiUrl(`/api/lists/creator/${token}/items/${itemId}`), {
         method: 'DELETE',
       })
 
@@ -134,6 +135,13 @@ function CreatorView() {
       console.error(err)
       alert('Failed to delete item')
     }
+  }
+
+  const handleAddToCategory = (category: string) => {
+    setFormData({ name: '', description: '', url: '', category: category === 'Uncategorized' ? '' : category, price: '' })
+    setShowAddForm(true)
+    // Scroll to form
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   if (loading) {
@@ -160,6 +168,13 @@ function CreatorView() {
     acc[category].push(item)
     return acc
   }, {} as Record<string, CreatorItem[]>)
+
+  // Get unique categories for dropdown (excluding empty/uncategorized)
+  const existingCategories = Array.from(new Set(
+    list.items
+      .map(item => item.category)
+      .filter((cat): cat is string => cat !== null && cat !== undefined && cat.trim() !== '')
+  )).sort()
 
   return (
     <div className="min-h-screen p-4 py-8">
@@ -231,11 +246,17 @@ function CreatorView() {
                 </label>
                 <input
                   type="text"
+                  list="categories"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                   placeholder="e.g., Books, Gadgets, Clothing"
                 />
+                <datalist id="categories">
+                  {existingCategories.map((cat) => (
+                    <option key={cat} value={cat} />
+                  ))}
+                </datalist>
               </div>
 
               <div>
@@ -267,7 +288,16 @@ function CreatorView() {
         <div className="space-y-6">
           {Object.entries(itemsByCategory).map(([category, items]) => (
             <div key={category} className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">{category}</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-900">{category}</h2>
+                <button
+                  onClick={() => handleAddToCategory(category)}
+                  className="px-3 py-1 text-sm bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors"
+                  title={`Add item to ${category}`}
+                >
+                  + Add
+                </button>
+              </div>
               <div className="space-y-3">
                 {items.map((item) => (
                   <div key={item.id} className="border border-gray-200 rounded-lg p-4">
@@ -294,11 +324,17 @@ function CreatorView() {
                         />
                         <input
                           type="text"
+                          list="categories-edit"
                           value={editingItem.category || ''}
                           onChange={(e) => setEditingItem({ ...editingItem, category: e.target.value })}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                           placeholder="Category"
                         />
+                        <datalist id="categories-edit">
+                          {existingCategories.map((cat) => (
+                            <option key={cat} value={cat} />
+                          ))}
+                        </datalist>
                         <input
                           type="number"
                           step="0.01"
