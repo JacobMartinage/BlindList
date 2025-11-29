@@ -109,7 +109,7 @@ export async function sendVerificationEmail(
 
   try {
     const result = await resend.emails.send({
-      from: 'BlindList <onboarding@resend.dev>', // Change this to your verified domain
+      from: 'BlindList <noreply@mail.blindlist.com>',
       to,
       subject: 'Access Your BlindLists',
       html: `
