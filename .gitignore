@@ -15,3 +15,7 @@ backend/dist
 *.log
 npm-debug.log*
 logs
+
+# Deployment
+railway_backup.sql
+.fly/

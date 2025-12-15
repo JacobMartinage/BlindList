@@ -1,0 +1,20 @@
+name = "blindlist"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Environment variables (public, non-sensitive)
+[vars]
+NODE_ENV = "production"
+
+# Secrets (set these with: wrangler secret put SECRET_NAME)
+# - DATABASE_URL (your Supabase connection string)
+# - RESEND_API_KEY
+# - FRONTEND_URL
+
+# CORS settings
+[env.production]
+name = "blindlist"
+
+[build]
+command = "npx prisma generate"
