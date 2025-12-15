@@ -33,6 +33,17 @@ function BuyerView() {
   }
 
   const handleTogglePurchased = async (itemId: string) => {
+    // Find the item to check its current purchased status
+    const item = list?.items.find(i => i.id === itemId)
+
+    // If item is already purchased and user is trying to untoggle it, show confirmation
+    if (item?.purchased) {
+      const confirmed = confirm('Are you sure you want to unmark this item as purchased?')
+      if (!confirmed) {
+        return
+      }
+    }
+
     setToggling(itemId)
 
     try {
