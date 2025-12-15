@@ -10,6 +10,7 @@ function CreatorView() {
   const [error, setError] = useState('')
 
   const [showAddForm, setShowAddForm] = useState(false)
+  const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -69,6 +70,7 @@ function CreatorView() {
       setList((prev) => prev ? { ...prev, items: [...prev.items, newItem] } : null)
       setFormData({ name: '', description: '', url: '', category: '', price: '' })
       setShowAddForm(false)
+      setActiveCategory(null)
     } catch (err) {
       console.error(err)
       alert('Failed to add item')
@@ -138,10 +140,10 @@ function CreatorView() {
   }
 
   const handleAddToCategory = (category: string) => {
-    setFormData({ name: '', description: '', url: '', category: category === 'Uncategorized' ? '' : category, price: '' })
-    setShowAddForm(true)
-    // Scroll to form
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    const categoryValue = category === 'Uncategorized' ? '' : category
+    setFormData({ name: '', description: '', url: '', category: categoryValue, price: '' })
+    setActiveCategory(category)
+    setShowAddForm(false) // Close the global form if open
   }
 
   if (loading) {
@@ -194,7 +196,13 @@ function CreatorView() {
               <p className="text-sm text-gray-500 mt-1">Creator View - Purchase status is hidden</p>
             </div>
             <button
-              onClick={() => setShowAddForm(!showAddForm)}
+              onClick={() => {
+                setShowAddForm(!showAddForm)
+                setActiveCategory(null) // Close any inline category forms
+                if (!showAddForm) {
+                  setFormData({ name: '', description: '', url: '', category: '', price: '' })
+                }
+              }}
               className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
             >
               {showAddForm ? 'Cancel' : '+ Add Item'}
@@ -291,13 +299,97 @@ function CreatorView() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-gray-900">{category}</h2>
                 <button
-                  onClick={() => handleAddToCategory(category)}
+                  onClick={() => activeCategory === category ? setActiveCategory(null) : handleAddToCategory(category)}
                   className="px-3 py-1 text-sm bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors"
                   title={`Add item to ${category}`}
                 >
-                  + Add
+                  {activeCategory === category ? 'Cancel' : '+ Add'}
                 </button>
               </div>
+
+              {activeCategory === category && (
+                <form onSubmit={handleAddItem} className="mb-4 p-4 bg-gray-50 rounded-lg space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Item Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                      rows={2}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      URL (link to product)
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.url}
+                      onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Category
+                    </label>
+                    <input
+                      type="text"
+                      list="categories-inline"
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                      placeholder="e.g., Books, Gadgets, Clothing"
+                    />
+                    <datalist id="categories-inline">
+                      {existingCategories.map((cat) => (
+                        <option key={cat} value={cat} />
+                      ))}
+                    </datalist>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Price
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                  >
+                    {submitting ? 'Adding...' : 'Add Item'}
+                  </button>
+                </form>
+              )}
+
               <div className="space-y-3">
                 {items.map((item) => (
                   <div key={item.id} className="border border-gray-200 rounded-lg p-4">
