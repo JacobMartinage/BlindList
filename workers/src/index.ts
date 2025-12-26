@@ -487,4 +487,24 @@ export default {
       }
     }
   },
+
+  // Scheduled cron job to keep Supabase database alive
+  // Runs twice weekly (Sunday and Wednesday at midnight UTC)
+  async scheduled(_event: ScheduledEvent, env: Env, _ctx: ExecutionContext): Promise<void> {
+    console.log('[KEEPALIVE] Running scheduled database keepalive at', new Date().toISOString());
+
+    try {
+      const pool = new Pool({ connectionString: env.DATABASE_URL });
+      const adapter = new PrismaNeon(pool);
+      const prisma = new PrismaClient({ adapter });
+
+      // Perform a simple query to keep the database active
+      await prisma.$queryRaw`SELECT 1`;
+
+      await prisma.$disconnect();
+      console.log('[KEEPALIVE] Database ping successful');
+    } catch (error) {
+      console.error('[KEEPALIVE] Database ping failed:', error);
+    }
+  },
 };

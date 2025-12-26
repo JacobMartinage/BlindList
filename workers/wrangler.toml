@@ -12,6 +12,11 @@ NODE_ENV = "production"
 # - RESEND_API_KEY
 # - FRONTEND_URL
 
+# Cron trigger to keep Supabase database alive (runs twice weekly)
+# Supabase pauses projects after 7 days of inactivity
+[triggers]
+crons = ["0 0 * * 7", "0 0 * * 3"]  # Every Sunday and Wednesday at midnight UTC
+
 # CORS settings
 [env.production]
 name = "blindlist"
