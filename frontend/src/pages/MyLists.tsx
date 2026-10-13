@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { listStorage, SavedList } from '../utils/listStorage'
+import { trackEvent } from '../utils/analytics'
 
 function MyLists() {
   const [lists, setLists] = useState<SavedList[]>([])
@@ -25,6 +26,7 @@ function MyLists() {
   const copyToClipboard = (text: string, token: string) => {
     navigator.clipboard.writeText(text)
     setCopiedToken(token)
+    if (token.startsWith('buyer-')) trackEvent('buyer_link_copied')
     setTimeout(() => setCopiedToken(null), 2000)
   }
 

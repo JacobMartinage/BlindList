@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { CreatorList, CreatorItem } from '../types'
 import { getApiUrl } from '../config'
+import { trackEvent } from '../utils/analytics'
 
 function CreatorView() {
   const { token } = useParams<{ token: string }>()
@@ -68,6 +69,7 @@ function CreatorView() {
 
       const newItem = await response.json()
       setList((prev) => prev ? { ...prev, items: [...prev.items, newItem] } : null)
+      trackEvent('item_added', { category: formData.category || 'Uncategorized' })
       setFormData({ name: '', description: '', url: '', category: '', price: '' })
       setShowAddForm(false)
       setActiveCategory(null)
@@ -133,6 +135,7 @@ function CreatorView() {
         ...prev,
         items: prev.items.filter((i) => i.id !== itemId)
       } : null)
+      trackEvent('item_deleted')
     } catch (err) {
       console.error(err)
       alert('Failed to delete item')

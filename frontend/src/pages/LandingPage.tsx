@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { listStorage } from '../utils/listStorage'
 import { getApiUrl } from '../config'
+import { trackEvent } from '../utils/analytics'
 
 function LandingPage() {
   const [listName, setListName] = useState('')
@@ -39,6 +40,7 @@ function LandingPage() {
       const data = await response.json()
       setResult(data)
       setSavedListName(listName)
+      trackEvent('list_created', { list_name: listName })
 
       // Save to localStorage
       const creatorToken = data.creatorUrl.split('/').pop() || ''
@@ -85,6 +87,7 @@ function LandingPage() {
       }
 
       setEmailSuccess(true)
+      trackEvent('email_submitted')
     } catch (err) {
       console.error(err)
       alert('Failed to send email. You can still access your list via the links above.')

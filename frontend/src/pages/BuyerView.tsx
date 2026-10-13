@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { BuyerList, BuyerItem } from '../types'
 import { getApiUrl } from '../config'
+import { trackEvent } from '../utils/analytics'
 
 function BuyerView() {
   const { token } = useParams<{ token: string }>()
@@ -59,6 +60,7 @@ function BuyerView() {
       }
 
       const updatedItem = await response.json()
+      trackEvent(updatedItem.purchased ? 'item_purchased' : 'item_unpurchased')
       setList((prev) => prev ? {
         ...prev,
         items: prev.items.map((item) =>
