@@ -34,6 +34,20 @@ function jsonResponse(data: any, status: number, headers: Record<string, string>
   });
 }
 
+// Picks which UTC hours (1 or 2 of them) should run the keepalive ping on a given day.
+// Seeded by the date, so every day is guaranteed at least one run, but the hours
+// look random and change daily.
+async function keepaliveHours(date: Date): Promise<number[]> {
+  const day = date.toISOString().slice(0, 10);
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`blindlist-keepalive:${day}`));
+  const b = new Uint8Array(digest);
+  const first = b[0] % 24;
+  if (b[1] % 2 === 0) return [first];
+  let second = b[2] % 24;
+  if (second === first) second = (first + 12) % 24;
+  return [first, second];
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -488,23 +502,37 @@ export default {
     }
   },
 
-  // Scheduled cron job to keep Supabase database alive
-  // Runs twice weekly (Sunday and Wednesday at midnight UTC)
-  async scheduled(_event: ScheduledEvent, env: Env, _ctx: ExecutionContext): Promise<void> {
+  // Scheduled cron job to keep the free Supabase project from auto-pausing.
+  // wrangler.toml fires this every hour; keepaliveHours() picks the 1-2 hours per
+  // day (UTC) that actually ping the database. Supabase pauses free projects after
+  // ~7 days of low activity, so we run a real query against a real table.
+  // Errors are re-thrown on purpose so failures show up as failed cron runs
+  // in the Cloudflare dashboard instead of being silently swallowed.
+  async scheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionContext): Promise<void> {
+    const when = new Date(event.scheduledTime);
+    const hours = await keepaliveHours(when);
+    if (!hours.includes(when.getUTCHours())) {
+      return; // not one of today's ping hours
+    }
+
     console.log('[KEEPALIVE] Running scheduled database keepalive at', new Date().toISOString());
 
+    const pool = new Pool({ connectionString: env.DATABASE_URL });
+    const adapter = new PrismaNeon(pool);
+    const prisma = new PrismaClient({ adapter });
+
     try {
-      const pool = new Pool({ connectionString: env.DATABASE_URL });
-      const adapter = new PrismaNeon(pool);
-      const prisma = new PrismaClient({ adapter });
-
-      // Perform a simple query to keep the database active
-      await prisma.$queryRaw`SELECT 1`;
-
-      await prisma.$disconnect();
-      console.log('[KEEPALIVE] Database ping successful');
+      const lists = await prisma.list.count();
+      console.log('[KEEPALIVE] Database ping successful (lists:', lists, ')');
     } catch (error) {
-      console.error('[KEEPALIVE] Database ping failed:', error);
+      console.error('[KEEPALIVE] Database ping FAILED:', error);
+      throw error;
+    } finally {
+      try {
+        await prisma.$disconnect();
+      } catch (e) {
+        console.error('[KEEPALIVE] Error disconnecting:', e);
+      }
     }
   },
 };

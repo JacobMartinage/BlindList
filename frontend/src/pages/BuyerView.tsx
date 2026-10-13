@@ -102,7 +102,7 @@ function BuyerView() {
 
   return (
     <div className="min-h-screen p-4 py-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <div className="mb-4">
           <a href="/" className="text-indigo-600 hover:text-indigo-800 font-medium">
             ← Home
@@ -124,44 +124,44 @@ function BuyerView() {
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {Object.entries(itemsByCategory).map(([category, items]) => (
-            <div key={category} className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">{category}</h2>
-              <div className="space-y-3">
+            <div key={category} className="bg-white rounded-2xl shadow-lg p-4">
+              <h2 className="text-base font-semibold text-gray-900 mb-3">{category}</h2>
+              <div className="space-y-2">
                 {items.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => handleTogglePurchased(item.id)}
                     disabled={toggling === item.id}
-                    className={`w-full text-left border-2 rounded-lg p-4 transition-all ${
+                    className={`w-full text-left border-2 rounded-lg p-2.5 transition-all ${
                       item.purchased
                         ? 'border-green-300 bg-green-50'
                         : 'border-gray-200 bg-white hover:border-indigo-300'
                     } disabled:opacity-50`}
                   >
-                    <div className="flex justify-between items-start mb-2">
+                    <div className="flex justify-between items-start mb-1">
                       <div>
-                        <h3 className={`font-semibold ${
+                        <h3 className={`text-sm font-semibold ${
                           item.purchased ? 'text-gray-500 line-through' : 'text-gray-900'
                         }`}>
                           {item.name}
                         </h3>
                         {item.price && (
-                          <p className={`font-medium text-sm mt-1 ${
+                          <p className={`font-medium text-xs mt-0.5 ${
                             item.purchased ? 'text-gray-400' : 'text-green-600'
                           }`}>
                             ${item.price.toFixed(2)}
                           </p>
                         )}
                       </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ml-1 ${
                         item.purchased
                           ? 'bg-green-200 text-green-800'
                           : 'bg-gray-200 text-gray-700'
                       }`}>
                         {toggling === item.id
-                          ? 'Updating...'
+                          ? '...'
                           : item.purchased
                           ? 'Purchased'
                           : 'Available'
@@ -170,7 +170,7 @@ function BuyerView() {
                     </div>
 
                     {item.description && (
-                      <p className={`text-sm mb-2 ${
+                      <p className={`text-xs mb-1 ${
                         item.purchased ? 'text-gray-400' : 'text-gray-600'
                       }`}>
                         {item.description}
@@ -183,7 +183,7 @@ function BuyerView() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className={`text-sm inline-flex items-center gap-1 ${
+                        className={`text-xs inline-flex items-center gap-1 ${
                           item.purchased
                             ? 'text-gray-400 hover:text-gray-600'
                             : 'text-indigo-600 hover:text-indigo-800'
