@@ -183,7 +183,7 @@ function BuyerView() {
                       <a
                         href={item.url}
                         target="_blank"
-                        rel="noopener noreferrer"
+                        rel="sponsored noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
                         className={`text-xs inline-flex items-center gap-1 ${
                           item.purchased
@@ -228,6 +228,12 @@ function BuyerView() {
             </li>
           </ul>
         </div>
+
+        {list.hasAffiliateLinks && (
+          <p className="mt-4 text-center text-xs text-gray-500">
+            As an Amazon Associate I earn from qualifying purchases.
+          </p>
+        )}
       </div>
     </div>
   )

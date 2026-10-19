@@ -20,4 +20,5 @@ export interface CreatorList {
 export interface BuyerList {
   name: string;
   items: BuyerItem[];
+  hasAffiliateLinks?: boolean;
 }

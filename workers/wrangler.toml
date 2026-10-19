@@ -6,6 +6,8 @@ compatibility_flags = ["nodejs_compat"]
 # Environment variables (public, non-sensitive)
 [vars]
 NODE_ENV = "production"
+# Your Amazon Associates tag (US), e.g. "yourname-20". Leave empty to turn affiliate tagging off.
+AMAZON_TAG_US = "jaquibis-20"
 
 # Secrets (set these with: wrangler secret put SECRET_NAME)
 # - DATABASE_URL (your Supabase connection string)
@@ -26,5 +28,5 @@ name = "blindlist"
 command = "npx prisma generate"
 
 [observability.logs]
-enabled = false
+enabled = true
 invocation_logs = true

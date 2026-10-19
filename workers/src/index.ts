@@ -2,12 +2,14 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaNeon } from '@prisma/adapter-neon';
 import { Pool } from '@neondatabase/serverless';
 import { nanoid } from 'nanoid';
+import { withAffiliateTag } from './affiliate';
 import { hashEmail, generateEmailToken, sendListLinksEmail, sendVerificationEmail } from './email';
 
 export interface Env {
   DATABASE_URL: string;
   RESEND_API_KEY: string;
   FRONTEND_URL: string;
+  AMAZON_TAG_US?: string; // Amazon Associates tag (US). Empty/unset = affiliate tagging off.
 }
 
 // Prisma Client cache for Cloudflare Workers
@@ -167,9 +169,19 @@ export default {
           return jsonResponse({ error: 'List not found' }, 404, headers);
         }
 
+        // Add our Amazon Associates tag to links that don't already have one.
+        // Stored URLs are untouched; creators see their original links.
+        let hasAffiliateLinks = false;
+        const items = list.items.map((item) => {
+          const tagged = withAffiliateTag(item.url, env.AMAZON_TAG_US);
+          if (tagged !== item.url) hasAffiliateLinks = true;
+          return { ...item, url: tagged };
+        });
+
         return jsonResponse({
           name: list.name,
-          items: list.items,
+          items,
+          hasAffiliateLinks,
         }, 200, headers);
       }
 

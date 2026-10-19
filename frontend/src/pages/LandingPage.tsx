@@ -299,6 +299,14 @@ function LandingPage() {
             </ul>
           </div>
         </div>
+
+        <p className="mt-6 text-center text-xs text-gray-500 max-w-xl mx-auto">
+          BlindList is free. When a buyer opens an Amazon link that doesn't already include an
+          affiliate tag, we add ours, so we earn a small commission at no cost to you. If a link
+          already has someone's tag, we leave it alone. We never change prices or what's on your
+          list, and list creators always see their original links. As an Amazon Associate I earn
+          from qualifying purchases.
+        </p>
       </div>
     </div>
   )
