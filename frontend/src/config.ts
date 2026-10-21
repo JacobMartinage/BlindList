@@ -1,5 +1,5 @@
 // API Configuration
-// In development: Uses proxy (vite.config.ts) to forward /api to localhost:3000
+// In development: Uses proxy (vite.config.ts) to forward /api to the Worker (wrangler dev) on localhost:8787
 // In production: Uses VITE_API_URL environment variable
 
 export const API_URL = import.meta.env.VITE_API_URL || '';

@@ -1,0 +1,5 @@
+# Copy to .dev.vars (git-ignored) for `npm run dev` in workers/.
+# Use a SEPARATE Supabase project for development so you don't touch real lists.
+DATABASE_URL=postgresql://postgres.YOUR_REF:YOUR_PASSWORD@aws-0-us-west-2.pooler.supabase.com:5432/postgres
+FRONTEND_URL=http://localhost:5173
+RESEND_API_KEY=re_your_dev_key
