@@ -19,3 +19,5 @@ logs
 # Deployment
 railway_backup.sql
 .fly/
+
+QUICK_START.md
