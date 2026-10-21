@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /list/
+
+Sitemap: https://blindlist.com/sitemap.xml

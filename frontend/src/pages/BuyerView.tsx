@@ -25,6 +25,7 @@ function BuyerView() {
 
       const data = await response.json()
       setList(data)
+      trackEvent('buyer_view', { item_count: Array.isArray(data.items) ? data.items.length : 0 })
     } catch (err) {
       setError('Failed to load list')
       console.error(err)
@@ -184,7 +185,10 @@ function BuyerView() {
                         href={item.url}
                         target="_blank"
                         rel="sponsored noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          trackEvent('product_click', { affiliate: /[?&]tag=/.test(item.url || '') })
+                        }}
                         className={`text-xs inline-flex items-center gap-1 ${
                           item.purchased
                             ? 'text-gray-400 hover:text-gray-600'
@@ -227,6 +231,17 @@ function BuyerView() {
               <span>This helps prevent duplicate gifts!</span>
             </li>
           </ul>
+        </div>
+
+        <div className="mt-8 text-center text-sm text-gray-500">
+          Want one for your own birthday, wedding or baby shower?{' '}
+          <a
+            href="/?ref=buyer"
+            onClick={() => trackEvent('buyer_cta_click')}
+            className="text-indigo-600 hover:text-indigo-800 font-medium"
+          >
+            Make your own blind list
+          </a>
         </div>
 
         {list.hasAffiliateLinks && (

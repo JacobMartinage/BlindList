@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaNeon } from '@prisma/adapter-neon';
 import { Pool } from '@neondatabase/serverless';
 import { nanoid } from 'nanoid';
-import { withAffiliateTag } from './affiliate';
+import { tagItemUrls } from './affiliate';
 import { hashEmail, generateEmailToken, sendListLinksEmail, sendVerificationEmail } from './email';
 
 export interface Env {
@@ -48,6 +48,14 @@ async function keepaliveHours(date: Date): Promise<number[]> {
   let second = b[2] % 24;
   if (second === first) second = (first + 12) % 24;
   return [first, second];
+}
+
+function describeError(e: unknown): string {
+  const x: any = e;
+  return JSON.stringify({
+    name: x?.name, message: x?.message, code: x?.code, meta: x?.meta,
+    cause: x?.cause?.message ?? x?.cause, sourceError: x?.sourceError?.message,
+  });
 }
 
 export default {
@@ -107,7 +115,7 @@ export default {
             buyerUrl: `${baseUrl}/list/buyer/${buyerToken}`,
           }, 200, headers);
         } catch (createError) {
-          console.error('Error in create list endpoint:', createError);
+          console.error('Error in create list endpoint:', describeError(createError));
           console.error('Create error type:', typeof createError);
           console.error('Create error keys:', Object.keys(createError || {}));
           throw createError;
@@ -171,11 +179,15 @@ export default {
 
         // Add our Amazon Associates tag to links that don't already have one.
         // Stored URLs are untouched; creators see their original links.
+        const taggedUrls = await tagItemUrls(
+          list.items.map((i) => i.url),
+          env.AMAZON_TAG_US,
+          { cache: (globalThis as any).caches?.default },
+        );
         let hasAffiliateLinks = false;
-        const items = list.items.map((item) => {
-          const tagged = withAffiliateTag(item.url, env.AMAZON_TAG_US);
-          if (tagged !== item.url) hasAffiliateLinks = true;
-          return { ...item, url: tagged };
+        const items = list.items.map((item, idx) => {
+          if (taggedUrls[idx] !== item.url) hasAffiliateLinks = true;
+          return { ...item, url: taggedUrls[idx] };
         });
 
         return jsonResponse({
@@ -492,7 +504,7 @@ export default {
       return jsonResponse({ error: 'Not found' }, 404, headers);
 
     } catch (error) {
-      console.error('Error caught:', error);
+      console.error('Error caught:', describeError(error));
       // Log the full error details
       if (error instanceof Error) {
         console.error('Error message:', error.message);

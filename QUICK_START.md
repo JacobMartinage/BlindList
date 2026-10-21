@@ -10,7 +10,7 @@ Move from Railway ($5/month) to Cloudflare Workers + Supabase ($0/month)
 # 1. Go to https://supabase.com
 # 2. Create project (save password!)
 # 3. Get connection string from Settings → Database → URI
-# Format: postgresql://postgres:PASSWORD@db.xxxxx.supabase.co:5432/postgres
+# Format: postgresql://postgres:YOUR_PASSWORD@db.YOUR_PROJECT_REF.supabase.co:5432/postgres
 ```
 
 ### 2. Cloudflare Deploy (10 min)
@@ -25,7 +25,7 @@ npx wrangler login
 
 # Set secrets
 npx wrangler secret put DATABASE_URL
-# Paste: postgresql://postgres:Jaqblin24!!@db.aulyiweqnakulbaumgom.supabase.co:5432/postgres
+# Paste: postgresql://postgres:YOUR_PASSWORD@db.YOUR_PROJECT_REF.supabase.co:5432/postgres
 
 npx wrangler secret put RESEND_API_KEY
 # Paste: re_Z5KRqjU3_JHxzoUxDb9vFMmvyJwfhEdf1

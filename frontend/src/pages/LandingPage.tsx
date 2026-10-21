@@ -40,7 +40,7 @@ function LandingPage() {
       const data = await response.json()
       setResult(data)
       setSavedListName(listName)
-      trackEvent('list_created', { list_name: listName })
+      trackEvent('list_created')
 
       // Save to localStorage
       const creatorToken = data.creatorUrl.split('/').pop() || ''
@@ -306,6 +306,12 @@ function LandingPage() {
           already has someone's tag, we leave it alone. We never change prices or what's on your
           list, and list creators always see their original links. As an Amazon Associate I earn
           from qualifying purchases.
+        </p>
+
+        <p className="mt-3 text-center text-xs text-gray-500">
+          <a href="/guides/" className="hover:text-gray-700 underline">Gift guides</a>
+          {' · '}
+          <a href="/privacy/" className="hover:text-gray-700 underline">Privacy</a>
         </p>
       </div>
     </div>
