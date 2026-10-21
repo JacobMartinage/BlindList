@@ -5,6 +5,7 @@ import { getApiUrl } from '../config'
 import { trackEvent } from '../utils/analytics'
 import { listStorage } from '../utils/listStorage'
 import { SiteHeader } from '../components/SiteHeader'
+import { ImportPanel } from '../components/ImportPanel'
 
 function CreatorView() {
   const { token } = useParams<{ token: string }>()
@@ -13,6 +14,7 @@ function CreatorView() {
   const [error, setError] = useState('')
 
   const [showAddForm, setShowAddForm] = useState(false)
+  const [showImport, setShowImport] = useState(false)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
@@ -289,7 +291,19 @@ function CreatorView() {
             )}
             <button
               onClick={() => {
+                setShowImport(!showImport)
+                setShowAddForm(false)
+                setActiveCategory(null)
+                if (!showImport) trackEvent('import_opened')
+              }}
+              className="btn btn-outline"
+            >
+              {showImport ? 'Close import' : 'Import list'}
+            </button>
+            <button
+              onClick={() => {
                 setShowAddForm(!showAddForm)
+                setShowImport(false)
                 setActiveCategory(null) // Close any inline category forms
                 if (!showAddForm) {
                   setFormData({ name: '', description: '', url: '', category: '', price: '' })
@@ -301,6 +315,17 @@ function CreatorView() {
             </button>
           </div>
         </div>
+
+        {showImport && token && (
+          <ImportPanel
+            token={token}
+            onClose={() => setShowImport(false)}
+            onImported={(newItems) => {
+              setList((prev) => (prev ? { ...prev, items: [...prev.items, ...newItems] } : null))
+              setShowImport(false)
+            }}
+          />
+        )}
 
         {showAddForm && (
           <section className="panel mb-8">

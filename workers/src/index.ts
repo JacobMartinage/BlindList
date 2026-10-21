@@ -3,6 +3,7 @@ import { PrismaNeon } from '@prisma/adapter-neon';
 import { Pool } from '@neondatabase/serverless';
 import { nanoid } from 'nanoid';
 import { tagItemUrls } from './affiliate';
+import { LIMITS, parseImportItems, sanitizeUrl } from './importItems';
 import { hashEmail, generateEmailToken, sendListLinksEmail, sendVerificationEmail } from './email';
 
 export interface Env {
@@ -197,6 +198,78 @@ export default {
         }, 200, headers);
       }
 
+      // 4a. Creator – Import items in bulk (from pasted JSON). dryRun returns the
+      // cleaned items for a preview without saving anything.
+      const importMatch = url.pathname.match(/^\/api\/lists\/creator\/([^/]+)\/items\/import$/);
+      if (importMatch && request.method === 'POST') {
+        const creatorToken = importMatch[1];
+
+        const declaredLength = Number(request.headers.get('content-length') || 0);
+        if (declaredLength > LIMITS.maxBodyBytes) {
+          return jsonResponse({ error: 'Import is too large.' }, 413, headers);
+        }
+        const text = await request.text();
+        if (text.length > LIMITS.maxBodyBytes) {
+          return jsonResponse({ error: 'Import is too large.' }, 413, headers);
+        }
+        let body: any;
+        try {
+          body = JSON.parse(text);
+        } catch {
+          return jsonResponse({ error: 'That is not valid JSON.' }, 400, headers);
+        }
+
+        const list = await prisma.list.findUnique({ where: { creatorToken } });
+        if (!list) {
+          return jsonResponse({ error: 'List not found' }, 404, headers);
+        }
+
+        const parsed = parseImportItems(body?.items);
+        if (!parsed.ok) {
+          return jsonResponse({ error: parsed.error }, 400, headers);
+        }
+
+        const existingCount = await prisma.item.count({ where: { listId: list.id } });
+        if (existingCount + parsed.items.length > LIMITS.maxItemsPerList) {
+          return jsonResponse(
+            { error: `A list can hold up to ${LIMITS.maxItemsPerList} items.` },
+            400,
+            headers,
+          );
+        }
+
+        if (body?.dryRun === true) {
+          return jsonResponse(
+            { items: parsed.items, skipped: parsed.skipped, warnings: parsed.warnings, dryRun: true },
+            200,
+            headers,
+          );
+        }
+
+        const created = await prisma.$transaction(
+          parsed.items.map((data) =>
+            prisma.item.create({
+              data: { listId: list.id, ...data },
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                url: true,
+                category: true,
+                price: true,
+                createdAt: true,
+              },
+            }),
+          ),
+        );
+
+        return jsonResponse(
+          { items: created, skipped: parsed.skipped, warnings: parsed.warnings },
+          200,
+          headers,
+        );
+      }
+
       // 4. Creator – Add Item
       const addItemMatch = url.pathname.match(/^\/api\/lists\/creator\/([^/]+)\/items$/);
       if (addItemMatch && request.method === 'POST') {
@@ -206,6 +279,11 @@ export default {
 
         if (!name || typeof name !== 'string') {
           return jsonResponse({ error: 'Item name is required' }, 400, headers);
+        }
+
+        const addUrl = sanitizeUrl(itemUrl);
+        if (!addUrl.ok) {
+          return jsonResponse({ error: 'Link must be a valid http or https address' }, 400, headers);
         }
 
         const list = await prisma.list.findUnique({
@@ -221,7 +299,7 @@ export default {
             listId: list.id,
             name,
             description: description || null,
-            url: itemUrl || null,
+            url: addUrl.url,
             category: category || null,
             price: price ? parseFloat(price) : null,
           },
@@ -247,6 +325,15 @@ export default {
         const body: any = await request.json();
         const { name, description, url: itemUrl, category, price } = body;
 
+        let editUrl: string | null | undefined;
+        if (itemUrl !== undefined) {
+          const check = sanitizeUrl(itemUrl);
+          if (!check.ok) {
+            return jsonResponse({ error: 'Link must be a valid http or https address' }, 400, headers);
+          }
+          editUrl = check.url;
+        }
+
         const list = await prisma.list.findUnique({
           where: { creatorToken },
         });
@@ -271,7 +358,7 @@ export default {
           data: {
             ...(name !== undefined && { name }),
             ...(description !== undefined && { description }),
-            ...(itemUrl !== undefined && { url: itemUrl }),
+            ...(editUrl !== undefined && { url: editUrl }),
             ...(category !== undefined && { category }),
             ...(price !== undefined && { price: price ? parseFloat(price) : null }),
           },
