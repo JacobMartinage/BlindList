@@ -14,6 +14,7 @@ function CreatorView() {
   const [error, setError] = useState('')
 
   const [showAddForm, setShowAddForm] = useState(false)
+  const [buyerCopied, setBuyerCopied] = useState(false)
   const [showImport, setShowImport] = useState(false)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [formData, setFormData] = useState({
@@ -185,6 +186,8 @@ function CreatorView() {
     if (!savedList) return
     navigator.clipboard.writeText(`${window.location.origin}/list/buyer/${savedList.buyerToken}`)
     trackEvent('buyer_link_copied')
+    setBuyerCopied(true)
+    setTimeout(() => setBuyerCopied(false), 2000)
   }
 
   const hostOf = (url: string) => {
@@ -285,8 +288,8 @@ function CreatorView() {
           </div>
           <div className="flex flex-wrap gap-2.5">
             {savedList && (
-              <button onClick={copyBuyerLink} className="btn btn-outline">
-                Copy buyer link
+              <button onClick={copyBuyerLink} className="btn btn-outline min-w-[11.5rem]" aria-live="polite">
+                {buyerCopied ? 'Copied!' : 'Copy buyer link'}
               </button>
             )}
             <button

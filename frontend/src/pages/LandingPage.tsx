@@ -26,6 +26,7 @@ function LandingPage() {
   const [email, setEmail] = useState('')
   const [emailSubmitting, setEmailSubmitting] = useState(false)
   const [emailSuccess, setEmailSuccess] = useState(false)
+  const [copiedKey, setCopiedKey] = useState<string | null>(null)
 
   const handleCreateList = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -73,8 +74,10 @@ function LandingPage() {
     }
   }
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (text: string, key: string) => {
     navigator.clipboard.writeText(text)
+    setCopiedKey(key)
+    setTimeout(() => setCopiedKey(null), 2000)
   }
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -148,8 +151,12 @@ function LandingPage() {
                       readOnly
                       className="field flex-1 min-w-[220px] font-mono text-sm"
                     />
-                    <button onClick={() => copyToClipboard(result.creatorUrl)} className="btn btn-outline">
-                      Copy
+                    <button
+                      onClick={() => copyToClipboard(result.creatorUrl, 'creator')}
+                      className="btn btn-outline min-w-[6.5rem]"
+                      aria-live="polite"
+                    >
+                      {copiedKey === 'creator' ? 'Copied!' : 'Copy'}
                     </button>
                     <a href={result.creatorUrl} className="btn btn-accent">
                       Add items →
@@ -177,10 +184,11 @@ function LandingPage() {
                       className="field flex-1 min-w-[220px] font-mono text-sm !bg-[#1B1B1F] !text-ground !border-[#8A8A90] focus:ring-offset-ink"
                     />
                     <button
-                      onClick={() => copyToClipboard(result.buyerUrl)}
-                      className="btn btn-accent !border-accent"
+                      onClick={() => copyToClipboard(result.buyerUrl, 'buyer')}
+                      className="btn btn-accent !border-accent min-w-[8.5rem]"
+                      aria-live="polite"
                     >
-                      Copy link
+                      {copiedKey === 'buyer' ? 'Copied!' : 'Copy link'}
                     </button>
                   </div>
                 </div>
