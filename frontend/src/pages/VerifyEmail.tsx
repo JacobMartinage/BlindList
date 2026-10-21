@@ -128,19 +128,13 @@ function VerifyEmail() {
               </div>
               <div className="flex flex-wrap gap-2">
                 <Link to={`/list/creator/${list.creatorToken}`} className="btn btn-ink btn-sm font-sans font-medium">
-                  Open list
+                  Open creator view
                 </Link>
                 <button
                   onClick={() => copyToClipboard(list.buyerUrl, `buyer-${list.buyerToken}`)}
-                  className="btn btn-outline btn-sm font-sans font-medium"
+                  className="btn btn-outline btn-sm w-[8.5rem] font-sans font-medium"
                 >
                   {copiedToken === `buyer-${list.buyerToken}` ? 'Copied!' : 'Copy buyer link'}
-                </button>
-                <button
-                  onClick={() => copyToClipboard(list.creatorUrl, `creator-${list.creatorToken}`)}
-                  className="btn btn-outline btn-sm font-sans font-medium"
-                >
-                  {copiedToken === `creator-${list.creatorToken}` ? 'Copied!' : 'Copy my link'}
                 </button>
               </div>
             </div>

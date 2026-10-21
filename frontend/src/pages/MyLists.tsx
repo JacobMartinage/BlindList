@@ -35,10 +35,6 @@ function MyLists() {
     return `${window.location.origin}/list/buyer/${token}`
   }
 
-  const getCreatorUrl = (token: string) => {
-    return `${window.location.origin}/list/creator/${token}`
-  }
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString('en-US', {
@@ -113,19 +109,13 @@ function MyLists() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Link to={`/list/creator/${list.creatorToken}`} className="btn btn-ink btn-sm font-sans font-medium">
-                    Open list
+                    Open creator view
                   </Link>
                   <button
                     onClick={() => copyToClipboard(getBuyerUrl(list.buyerToken), `buyer-${list.buyerToken}`)}
-                    className="btn btn-outline btn-sm font-sans font-medium"
+                    className="btn btn-outline btn-sm w-[8.5rem] font-sans font-medium"
                   >
                     {copiedToken === `buyer-${list.buyerToken}` ? 'Copied!' : 'Copy buyer link'}
-                  </button>
-                  <button
-                    onClick={() => copyToClipboard(getCreatorUrl(list.creatorToken), `creator-${list.creatorToken}`)}
-                    className="btn btn-outline btn-sm font-sans font-medium"
-                  >
-                    {copiedToken === `creator-${list.creatorToken}` ? 'Copied!' : 'Copy my link'}
                   </button>
                   <button
                     onClick={() => handleRemove(list.creatorToken)}
