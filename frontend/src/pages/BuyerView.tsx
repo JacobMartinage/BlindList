@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { BuyerList, BuyerItem } from '../types'
 import { getApiUrl } from '../config'
 import { trackEvent } from '../utils/analytics'
+import { Logo } from '../components/SiteHeader'
 
 function BuyerView() {
   const { token } = useParams<{ token: string }>()
@@ -76,21 +77,16 @@ function BuyerView() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl text-gray-600">Loading...</div>
+  const centered = (text: string, danger = false) => (
+    <div className="min-h-screen flex items-center justify-center px-5">
+      <div className={`font-display text-xl ${danger ? 'text-[#B42318]' : 'text-muted'}`} role={danger ? 'alert' : 'status'}>
+        {text}
       </div>
-    )
-  }
+    </div>
+  )
 
-  if (error || !list) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl text-red-600">{error || 'List not found'}</div>
-      </div>
-    )
-  }
+  if (loading) return centered('Loading...')
+  if (error || !list) return centered(error || 'List not found', true)
 
   const itemsByCategory = list.items.reduce((acc, item) => {
     const category = item.category || 'Uncategorized'
@@ -102,153 +98,147 @@ function BuyerView() {
   }, {} as Record<string, BuyerItem[]>)
 
   const purchasedCount = list.items.filter(item => item.purchased).length
+  const categories = Object.entries(itemsByCategory)
+  const categoryId = (name: string) => `cat-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
 
   return (
-    <div className="min-h-screen p-4 py-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-4">
-          <a href="/" className="text-indigo-600 hover:text-indigo-800 font-medium">
-            ← Home
-          </a>
-        </div>
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{list.name}</h1>
-          <p className="text-sm text-gray-500 mb-4">Buyer View - You can see and claim items</p>
+    <div className="min-h-screen">
+      <div className="max-w-[1160px] mx-auto px-4 sm:px-10 pb-16">
+        <header className="py-5 sm:py-7">
+          <Logo />
+        </header>
 
-          <div className="flex items-center gap-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <div className="text-green-700">
-              <p className="text-sm font-medium">
-                {purchasedCount} of {list.items.length} items marked as purchased
-              </p>
-              <p className="text-xs mt-1">
-                Click on items to mark/unmark them as purchased. The list creator won't see your selections.
-              </p>
-            </div>
+        <div className="flex flex-wrap items-end justify-between gap-6 sm:gap-8 pt-4 sm:pt-6 pb-8">
+          <div className="min-w-0">
+            <div className="label-mono mb-2 sm:mb-3">You're shopping for</div>
+            <h1 className="text-[38px] sm:text-[52px] leading-[1.05] font-bold tracking-tight break-words">
+              {list.name}
+            </h1>
           </div>
+          {list.items.length > 0 && (
+            <div className="flex-[0_1_340px] min-w-[240px] w-full sm:w-auto">
+              <div className="flex justify-between font-mono text-[13px] mb-2">
+                <span>{purchasedCount} of {list.items.length} claimed</span>
+                <span className="text-muted">{list.items.length - purchasedCount} left</span>
+              </div>
+              <div className="flex gap-1" aria-hidden="true">
+                {list.items.map((item, i) => (
+                  <span
+                    key={item.id}
+                    className={`flex-1 h-3 border-2 border-ink ${i < purchasedCount ? 'bg-accent' : 'bg-paper'}`}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {Object.entries(itemsByCategory).map(([category, items]) => (
-            <div key={category} className="bg-white rounded-2xl shadow-lg p-4">
-              <h2 className="text-base font-semibold text-gray-900 mb-3">{category}</h2>
-              <div className="space-y-2">
-                {items.map((item) => (
+        <p className="mb-7 px-4 py-3.5 bg-ink text-ground text-[15px]">
+          Tap a row when you've bought it so nobody else does. The list owner can't see what you mark.
+        </p>
+
+        {categories.length > 1 && (
+          <nav
+            aria-label="Jump to a category"
+            className="sm:hidden sticky top-0 z-10 -mx-4 mb-5 px-4 py-2.5 bg-ground border-y-2 border-ink flex gap-2 overflow-x-auto"
+          >
+            <span className="shrink-0 self-center label-mono !text-[11px]">Jump to</span>
+            {categories.map(([category, items]) => {
+              const left = items.filter((i) => !i.purchased).length
+              return (
+                <a
+                  key={category}
+                  href={`#${categoryId(category)}`}
+                  className="shrink-0 inline-flex items-center gap-2 h-10 px-3.5 bg-paper border-2 border-ink no-underline font-semibold text-sm hover:text-ink"
+                >
+                  {category}
+                  <span className="font-mono font-normal text-xs text-muted">{left === 0 ? 'done' : `${left} left`}</span>
+                </a>
+              )
+            })}
+          </nav>
+        )}
+
+        <div className="[column-width:460px] [column-gap:28px]">
+          {categories.map(([category, items]) => (
+            <section
+              key={category}
+              id={categoryId(category)}
+              className="panel break-inside-avoid mb-5 sm:mb-7 scroll-mt-[72px]"
+            >
+              <h2 className="px-4 sm:px-5 py-2.5 sm:py-3 border-b-2 border-ink text-lg sm:text-xl font-semibold tracking-tight">
+                {category}
+              </h2>
+              {items.map((item) => (
+                <div
+                  key={item.id}
+                  className={`flex items-start gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 border-b border-line last:border-b-0 ${
+                    item.purchased ? 'bg-[#EFEEE8]' : 'bg-paper'
+                  }`}
+                >
                   <button
-                    key={item.id}
+                    type="button"
                     onClick={() => handleTogglePurchased(item.id)}
                     disabled={toggling === item.id}
-                    className={`w-full text-left border-2 rounded-lg p-2.5 transition-all ${
-                      item.purchased
-                        ? 'border-green-300 bg-green-50'
-                        : 'border-gray-200 bg-white hover:border-indigo-300'
-                    } disabled:opacity-50`}
+                    aria-pressed={item.purchased}
+                    aria-label={`${item.purchased ? 'Unmark' : 'Mark as bought:'} ${item.name}`}
+                    className={`shrink-0 w-11 h-11 inline-flex items-center justify-center border-2 border-ink cursor-pointer disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
+                      item.purchased ? 'bg-ink' : 'bg-paper hover:bg-ground'
+                    }`}
                   >
-                    <div className="flex justify-between items-start mb-1">
-                      <div>
-                        <h3 className={`text-sm font-semibold ${
-                          item.purchased ? 'text-gray-500 line-through' : 'text-gray-900'
-                        }`}>
-                          {item.name}
-                        </h3>
-                        {item.price && (
-                          <p className={`font-medium text-xs mt-0.5 ${
-                            item.purchased ? 'text-gray-400' : 'text-green-600'
-                          }`}>
-                            ${item.price.toFixed(2)}
-                          </p>
-                        )}
-                      </div>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ml-1 ${
-                        item.purchased
-                          ? 'bg-green-200 text-green-800'
-                          : 'bg-gray-200 text-gray-700'
-                      }`}>
-                        {toggling === item.id
-                          ? '...'
-                          : item.purchased
-                          ? 'Purchased'
-                          : 'Available'
-                        }
-                      </span>
-                    </div>
-
-                    {item.description && (
-                      <p className={`text-xs mb-1 ${
-                        item.purchased ? 'text-gray-400' : 'text-gray-600'
-                      }`}>
-                        {item.description}
-                      </p>
-                    )}
-
+                    {toggling === item.id ? (
+                      <span className="font-mono text-ground text-sm">...</span>
+                    ) : item.purchased ? (
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F2F1EC" strokeWidth="3" strokeLinecap="square" aria-hidden="true">
+                        <path d="M4 12.5l5 5L20 6.5" />
+                      </svg>
+                    ) : null}
+                  </button>
+                  <div className="flex-1 min-w-0">
+                    <h3 className={`font-sans text-base sm:text-[17px] font-semibold break-words ${item.purchased ? 'line-through text-muted' : ''}`}>
+                      {item.name}
+                    </h3>
+                    {item.description && <p className="text-sm text-muted">{item.description}</p>}
                     {item.url && (
                       <a
                         href={item.url}
                         target="_blank"
                         rel="sponsored noopener noreferrer"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          trackEvent('product_click', { affiliate: /[?&]tag=/.test(item.url || '') })
-                        }}
-                        className={`text-xs inline-flex items-center gap-1 ${
-                          item.purchased
-                            ? 'text-gray-400 hover:text-gray-600'
-                            : 'text-indigo-600 hover:text-indigo-800'
-                        }`}
+                        onClick={() => trackEvent('product_click', { affiliate: /[?&]tag=/.test(item.url || '') })}
+                        className="inline-block mt-1 py-1 font-mono text-[13px] underline"
                       >
-                        View Product →
+                        View product ↗
                       </a>
                     )}
-                  </button>
-                ))}
-              </div>
-            </div>
+                  </div>
+                  {item.price != null && (
+                    <div className={`shrink-0 font-mono text-[15px] ${item.purchased ? 'text-muted' : ''}`}>
+                      ${item.price.toFixed(2)}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </section>
           ))}
 
           {list.items.length === 0 && (
-            <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-              <p className="text-gray-500 text-lg">This list doesn't have any items yet.</p>
+            <div className="panel p-12 text-center">
+              <p className="text-muted text-lg">This list doesn't have any items yet.</p>
             </div>
           )}
         </div>
 
-        <div className="mt-8 bg-white rounded-2xl shadow-lg p-6">
-          <h3 className="font-semibold text-gray-900 mb-2">How to use this list:</h3>
-          <ul className="space-y-2 text-sm text-gray-600">
-            <li className="flex items-start">
-              <span className="text-indigo-600 mr-2">•</span>
-              <span>Click on any item to mark it as purchased</span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-indigo-600 mr-2">•</span>
-              <span>Click again to unmark it if you change your mind</span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-indigo-600 mr-2">•</span>
-              <span>The list creator cannot see which items you've marked</span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-indigo-600 mr-2">•</span>
-              <span>This helps prevent duplicate gifts!</span>
-            </li>
-          </ul>
+        <div className="mt-9 flex flex-wrap justify-between items-baseline gap-4 text-sm text-ink-soft">
+          <span>
+            Want one for your own birthday, wedding or baby shower?{' '}
+            <a href="/?ref=buyer" onClick={() => trackEvent('buyer_cta_click')} className="underline">
+              Make your own blind list
+            </a>
+          </span>
+          {list.hasAffiliateLinks && (
+            <span className="text-muted">As an Amazon Associate I earn from qualifying purchases.</span>
+          )}
         </div>
-
-        <div className="mt-8 text-center text-sm text-gray-500">
-          Want one for your own birthday, wedding or baby shower?{' '}
-          <a
-            href="/?ref=buyer"
-            onClick={() => trackEvent('buyer_cta_click')}
-            className="text-indigo-600 hover:text-indigo-800 font-medium"
-          >
-            Make your own blind list
-          </a>
-        </div>
-
-        {list.hasAffiliateLinks && (
-          <p className="mt-4 text-center text-xs text-gray-500">
-            As an Amazon Associate I earn from qualifying purchases.
-          </p>
-        )}
       </div>
     </div>
   )

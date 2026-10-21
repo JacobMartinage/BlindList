@@ -2,6 +2,20 @@ import { useState } from 'react'
 import { listStorage } from '../utils/listStorage'
 import { getApiUrl } from '../config'
 import { trackEvent } from '../utils/analytics'
+import { SiteHeader, SiteFooter } from '../components/SiteHeader'
+
+const DEMO_ROWS = [
+  { name: 'Wild Robot, hardcover', claimed: true, bar: 72 },
+  { name: 'Watercolor set, 24 pans', claimed: false, bar: 54 },
+  { name: "Kids' binoculars", claimed: true, bar: 64 },
+  { name: 'Rain boots, size 3', claimed: false, bar: 48 },
+]
+
+const STEPS = [
+  { n: '01', title: 'Make the list', body: 'Add anything with a link from any store, plus a price and a note. This is your creator link, and only you use it.' },
+  { n: '02', title: 'Share the buyer link', body: "Send it to everyone who might buy something. They don't need an account either." },
+  { n: '03', title: 'They claim, you wait', body: 'Buyers mark what they bought so nobody doubles up. You can edit the list, but you never see what was claimed.' },
+]
 
 function LandingPage() {
   const [listName, setListName] = useState('')
@@ -98,221 +112,220 @@ function LandingPage() {
 
   if (result) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              List Created Successfully!
+      <div className="min-h-screen">
+        <div className="max-w-[1160px] mx-auto px-5 sm:px-10">
+          <SiteHeader />
+
+          <div className="pt-10 pb-9">
+            <span className="inline-block font-mono text-xs uppercase tracking-[0.08em] px-2.5 py-1 bg-accent border-2 border-ink">
+              List created
+            </span>
+            <h1 className="text-4xl sm:text-[56px] leading-[1.05] font-bold tracking-tight mt-4 mb-3 break-words">
+              {savedListName}
             </h1>
-            <p className="text-gray-600 mb-3">
-              Your list has been saved to this browser
-            </p>
-            <p className="text-sm text-gray-500">
-              You can access "{savedListName}" anytime from "My Lists"
+            <p className="text-ink-soft max-w-xl">
+              Saved in this browser. You can find it again any time under My lists.
             </p>
           </div>
 
-          <div className="space-y-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <h2 className="text-lg font-semibold text-blue-900 mb-2">
-                Creator Link (for you)
-              </h2>
-              <p className="text-sm text-blue-700 mb-3">
-                Use this to add and edit items. You won't see what's been purchased.
-              </p>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={result.creatorUrl}
-                  readOnly
-                  className="flex-1 px-3 py-2 bg-white border border-blue-300 rounded text-sm"
-                />
-                <button
-                  onClick={() => copyToClipboard(result.creatorUrl)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                >
-                  Copy
-                </button>
-              </div>
+          <div className="flex flex-wrap gap-6 items-start">
+            <div className="flex-[2_1_520px] min-w-0 flex flex-col gap-6">
+              <section className="panel">
+                <div className="panel-head">
+                  <span>Your link</span>
+                  <span className="text-muted">Keep private</span>
+                </div>
+                <div className="p-5">
+                  <p className="mb-3.5 text-ink-soft">
+                    Add and edit items here. You won't see what gets claimed.
+                  </p>
+                  <div className="flex flex-wrap gap-2.5">
+                    <label htmlFor="creatorUrl" className="sr-only">Creator link</label>
+                    <input
+                      id="creatorUrl"
+                      type="text"
+                      value={result.creatorUrl}
+                      readOnly
+                      className="field flex-1 min-w-[220px] font-mono text-sm"
+                    />
+                    <button onClick={() => copyToClipboard(result.creatorUrl)} className="btn btn-outline">
+                      Copy
+                    </button>
+                    <a href={result.creatorUrl} className="btn btn-accent">
+                      Add items →
+                    </a>
+                  </div>
+                </div>
+              </section>
+
+              <section className="bg-ink text-ground border-2 border-ink">
+                <div className="panel-head border-muted">
+                  <span>Share this link</span>
+                  <span className="text-line">For buyers</span>
+                </div>
+                <div className="p-5">
+                  <p className="mb-3.5 text-line">
+                    Send this to family and friends. They can mark items as bought without an account.
+                  </p>
+                  <div className="flex flex-wrap gap-2.5">
+                    <label htmlFor="buyerUrl" className="sr-only">Buyer link</label>
+                    <input
+                      id="buyerUrl"
+                      type="text"
+                      value={result.buyerUrl}
+                      readOnly
+                      className="field flex-1 min-w-[220px] font-mono text-sm !bg-[#1B1B1F] !text-ground !border-[#8A8A90] focus:ring-offset-ink"
+                    />
+                    <button
+                      onClick={() => copyToClipboard(result.buyerUrl)}
+                      className="btn btn-accent !border-accent"
+                    >
+                      Copy link
+                    </button>
+                  </div>
+                </div>
+              </section>
             </div>
 
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-              <h2 className="text-lg font-semibold text-green-900 mb-2">
-                Buyer Link (share this)
-              </h2>
-              <p className="text-sm text-green-700 mb-3">
-                Share this with friends and family so they can mark items as purchased.
-              </p>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={result.buyerUrl}
-                  readOnly
-                  className="flex-1 px-3 py-2 bg-white border border-green-300 rounded text-sm"
-                />
-                <button
-                  onClick={() => copyToClipboard(result.buyerUrl)}
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-                >
-                  Copy
-                </button>
-              </div>
-            </div>
+            <aside className="flex-[1_1_300px] min-w-0 panel">
+              <div className="panel-head">Optional backup</div>
+              {!emailSuccess ? (
+                <form onSubmit={handleEmailSubmit} className="p-5 flex flex-col gap-3">
+                  <p className="text-[15px] text-ink-soft">
+                    Lose your browser data and you lose the links. Email them to yourself so you can
+                    always get back in, from any device.
+                  </p>
+                  <label htmlFor="backupEmail" className="label-mono">Your email</label>
+                  <input
+                    id="backupEmail"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="field"
+                    disabled={emailSubmitting}
+                  />
+                  <button type="submit" disabled={emailSubmitting} className="btn btn-ink">
+                    {emailSubmitting ? 'Sending...' : 'Email me the links'}
+                  </button>
+                  <p className="text-[13px] text-muted">We use it only to send your links.</p>
+                </form>
+              ) : (
+                <div className="p-5 flex items-start gap-2.5" role="status">
+                  <svg className="w-5 h-5 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="square" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <p className="font-medium">
+                    Email sent! Check your inbox for a confirmation with your list links.
+                  </p>
+                </div>
+              )}
+            </aside>
           </div>
 
-          {!emailSuccess ? (
-            <div className="mt-8 bg-purple-50 border border-purple-200 rounded-lg p-6">
-              <h3 className="font-semibold text-purple-900 mb-2">
-                Want cross-device access?
-              </h3>
-              <p className="text-sm text-purple-700 mb-4">
-                Optionally provide your email to access this list from any device. We'll send you a confirmation email with your links.
-              </p>
-              <form onSubmit={handleEmailSubmit} className="flex gap-2">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  className="flex-1 px-3 py-2 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
-                  disabled={emailSubmitting}
-                />
-                <button
-                  type="submit"
-                  disabled={emailSubmitting}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
-                >
-                  {emailSubmitting ? 'Sending...' : 'Send Email'}
-                </button>
-              </form>
-            </div>
-          ) : (
-            <div className="mt-8 bg-green-50 border border-green-200 rounded-lg p-6">
-              <div className="flex items-center gap-2 text-green-800">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <p className="font-medium">
-                  Email sent! Check your inbox for a confirmation with your list links.
-                </p>
-              </div>
-            </div>
-          )}
-
-          <div className="mt-6 text-center">
-            <a
-              href={result.creatorUrl}
-              className="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
-            >
-              Go to Your List
-            </a>
-          </div>
+          <SiteFooter />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full">
-        <div className="flex justify-between items-center mb-4">
-          <a
-            href="/find-lists"
-            className="text-indigo-600 hover:text-indigo-800 font-medium text-sm"
-          >
-            Find My Lists
-          </a>
-          <a
-            href="/my-lists"
-            className="text-indigo-600 hover:text-indigo-800 font-medium"
-          >
-            My Lists {listStorage.getCount() > 0 && `(${listStorage.getCount()})`}
-          </a>
-        </div>
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-gray-900 mb-4">
-            BlindList
-          </h1>
-          <p className="text-xl text-gray-600 mb-2">
-            Create a shareable wishlist where buyers can mark items as purchased
-          </p>
-          <p className="text-lg text-gray-700 font-medium">
-            — but the list creator stays completely blind to what was bought.
-          </p>
-        </div>
+    <div className="min-h-screen">
+      <div className="max-w-[1160px] mx-auto px-5 sm:px-10">
+        <SiteHeader />
 
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-            Create Your List
-          </h2>
+        <section className="flex flex-wrap gap-14 items-center pt-10 pb-16 md:pt-14 md:pb-24">
+          <div className="flex-[1_1_460px] min-w-0">
+            <div className="label-mono mb-5 !text-[13px]">Gift lists with a blind spot</div>
+            <h1 className="text-5xl md:text-[68px] leading-none font-bold tracking-[-0.035em] mb-6">
+              Everyone can see what's taken. Except you.
+            </h1>
+            <p className="text-xl text-ink-soft mb-9 max-w-[520px]">
+              Make a list, send one link, and let family and friends mark what they buy. Nothing
+              gets bought twice, and the surprise stays whole.
+            </p>
 
-          <form onSubmit={handleCreateList} className="space-y-6">
-            <div>
-              <label htmlFor="listName" className="block text-sm font-medium text-gray-700 mb-2">
-                List Name
-              </label>
-              <input
-                type="text"
-                id="listName"
-                value={listName}
-                onChange={(e) => setListName(e.target.value)}
-                placeholder="e.g., Jacob's Christmas 2025"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
-                disabled={loading}
-              />
+            <form onSubmit={handleCreateList} className="flex flex-wrap gap-3 max-w-[560px]">
+              <div className="flex-[1_1_260px] flex flex-col gap-1.5">
+                <label htmlFor="listName" className="label-mono">Name your list</label>
+                <input
+                  type="text"
+                  id="listName"
+                  value={listName}
+                  onChange={(e) => setListName(e.target.value)}
+                  placeholder="Mia's 8th birthday"
+                  className="field !h-14 text-lg bg-paper"
+                  disabled={loading}
+                />
+              </div>
+              <button type="submit" disabled={loading} className="btn btn-accent !h-14 text-lg self-end">
+                {loading ? 'Creating...' : 'Create list'}
+              </button>
+              {error && (
+                <div role="alert" className="basis-full text-sm text-[#B42318] bg-paper border-2 border-ink p-3">
+                  {error}
+                </div>
+              )}
+            </form>
+            <p className="text-sm text-muted mt-3.5">
+              Free. No account. Saved in this browser, with an optional email backup.
+            </p>
+          </div>
+
+          <div className="flex-[1_1_400px] min-w-0 flex flex-col gap-5">
+            <div className="panel">
+              <div className="panel-head">
+                <span>What you see</span>
+                <span className="text-muted normal-case tracking-normal">Mia's 8th birthday</span>
+              </div>
+              {DEMO_ROWS.map((r) => (
+                <div key={r.name} className="flex items-center justify-between gap-3 px-[18px] py-3 border-b border-line">
+                  <span className="font-medium">{r.name}</span>
+                  <span className="redact" style={{ width: r.bar }} aria-hidden="true" />
+                </div>
+              ))}
+              <div className="px-[18px] py-3 text-sm text-muted">Claimed items stay hidden from you.</div>
             </div>
 
-            {error && (
-              <div className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg p-3">
-                {error}
+            <div className="bg-ink text-ground border-2 border-ink">
+              <div className="panel-head border-muted">
+                <span>What they see</span>
+                <span className="text-line">Buyer link</span>
               </div>
-            )}
+              {DEMO_ROWS.map((r) => (
+                <div key={r.name} className="flex items-center justify-between gap-3 px-[18px] py-3 border-b border-ink-soft">
+                  <span className={`font-medium ${r.claimed ? 'line-through text-[#A5A49E]' : ''}`}>{r.name}</span>
+                  <span
+                    className={`font-mono text-xs tracking-wide px-2 py-[3px] border ${
+                      r.claimed ? 'bg-accent border-accent text-ink' : 'border-[#8A8A90]'
+                    }`}
+                  >
+                    {r.claimed ? 'CLAIMED' : 'OPEN'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Creating...' : 'Create List'}
-            </button>
-          </form>
-
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <h3 className="font-semibold text-gray-900 mb-3">How it works:</h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li className="flex items-start">
-                <span className="text-indigo-600 font-bold mr-2">1.</span>
-                <span>Create a list and add your wishlist items</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-indigo-600 font-bold mr-2">2.</span>
-                <span>Share the buyer link with friends and family</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-indigo-600 font-bold mr-2">3.</span>
-                <span>They can mark items as purchased to avoid duplicates</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-indigo-600 font-bold mr-2">4.</span>
-                <span>You stay blind to which items were claimed - keep the surprise!</span>
-              </li>
-            </ul>
+      <section className="border-y-2 border-ink bg-paper">
+        <div className="max-w-[1160px] mx-auto px-5 sm:px-10 py-16 md:py-[72px]">
+          <h2 className="text-4xl font-bold tracking-tight mb-10">Two links. Two views.</h2>
+          <div className="grid gap-10 sm:grid-cols-3">
+            {STEPS.map((s) => (
+              <div key={s.n} className="border-t-2 border-ink pt-[18px]">
+                <div className="font-mono text-sm text-muted mb-2.5">{s.n}</div>
+                <h3 className="text-[22px] font-semibold tracking-tight mb-2">{s.title}</h3>
+                <p className="text-ink-soft">{s.body}</p>
+              </div>
+            ))}
           </div>
         </div>
+      </section>
 
-        <p className="mt-6 text-center text-xs text-gray-500 max-w-xl mx-auto">
-          BlindList is free. When a buyer opens an Amazon link that doesn't already include an
-          affiliate tag, we add ours, so we earn a small commission at no cost to you. If a link
-          already has someone's tag, we leave it alone. We never change prices or what's on your
-          list, and list creators always see their original links. As an Amazon Associate I earn
-          from qualifying purchases.
-        </p>
-
-        <p className="mt-3 text-center text-xs text-gray-500">
-          <a href="/guides/" className="hover:text-gray-700 underline">Gift guides</a>
-          {' · '}
-          <a href="/privacy/" className="hover:text-gray-700 underline">Privacy</a>
-        </p>
+      <div className="max-w-[1160px] mx-auto px-5 sm:px-10">
+        <SiteFooter />
       </div>
     </div>
   )
